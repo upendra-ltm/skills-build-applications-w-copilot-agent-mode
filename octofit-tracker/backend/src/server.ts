@@ -15,6 +15,26 @@ const apiUrl = codespaceName
 
 app.use(express.json());
 
+app.use((request, response, next) => {
+  const origin = request.headers.origin;
+
+  if (origin && (
+    origin === 'http://localhost:5173' ||
+    /^https:\/\/[^/]+-5173\.app\.github\.dev$/.test(origin)
+  )) {
+    response.setHeader('Access-Control-Allow-Origin', origin);
+    response.setHeader('Vary', 'Origin');
+  }
+
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  if (request.method === 'OPTIONS') {
+    response.sendStatus(204);
+    return;
+  }
+  next();
+});
+
 app.use('/api/users', usersRouter);
 app.use('/api/teams', teamsRouter);
 app.use('/api/activities', activitiesRouter);
